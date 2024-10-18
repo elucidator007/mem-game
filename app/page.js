@@ -1,101 +1,87 @@
-import Image from "next/image";
+'use client'
+import { createMemoryGame } from "@/utility/lib";
+import { useEffect, useState } from "react";
+import Confetti from 'react-confetti';
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.js
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+    const [curr, setCurr] = useState([]);
+    const [gameArray, setGameArray] = useState([]);
+    const [matched, setMatched] = useState([]);
+    const [isGameComplete, setIsGameComplete] = useState(false);
+    const difficulty_level = 4;
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+    useEffect(() => {
+        startNewGame();
+    }, []);
+
+    useEffect(() => {
+        if (matched.length === gameArray.length / 2 && gameArray.length > 0) {
+            setIsGameComplete(true);
+        }
+    }, [matched, gameArray]);
+
+    const startNewGame = () => {
+        setGameArray(createMemoryGame(difficulty_level));
+        setMatched([]);
+        setCurr([]);
+        setIsGameComplete(false);
+    };
+
+    const handleCardClick = (index) => {
+        if (curr.length === 0) {
+            setCurr([index]);
+        } else if (curr.length === 1 && !curr.includes(index)) {
+            const newCurr = [...curr, index];
+            setCurr(newCurr);
+
+            setTimeout(() => {
+                if (gameArray[newCurr[0]] === gameArray[newCurr[1]]) {
+                    setMatched(prev => [...prev, gameArray[newCurr[0]]]);
+                }
+                setCurr([]);
+            }, 1000);
+        }
+    };
+
+    return (
+        <div className="flex justify-center items-center min-h-screen bg-gradient-to-r from-blue-500 to-purple-600 p-8">
+            {isGameComplete && <Confetti />}
+            <div className="bg-white rounded-xl shadow-2xl p-6">
+                <h1 className="text-3xl font-bold text-center mb-6 text-gray-800">Memory Game</h1>
+                <div className="grid grid-cols-4 gap-4 mb-6">
+                    {gameArray.map((item, index) => {
+                        const isMatched = matched.includes(item);
+                        const isVisible = curr.includes(index);
+                        return (
+                            <div 
+                                key={index}
+                                className="h-16 w-16 cursor-pointer perspective"
+                                onClick={() => !isVisible && !isGameComplete && !isMatched && handleCardClick(index)}
+                            >
+                                <div className={`relative w-full h-full transition-transform duration-500 transform-style-3d ${(isVisible || isMatched) ? 'rotate-y-180' : ''}`}>
+                                    <div className="absolute w-full h-full backface-hidden bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg shadow-md flex items-center justify-center text-white font-bold text-xl">
+                                        ?
+                                    </div>
+                                    <div className="absolute w-full h-full backface-hidden bg-gradient-to-br from-green-400 to-blue-500 rounded-lg shadow-md flex items-center justify-center text-white font-bold text-xl rotate-y-180">
+                                        {item}
+                                    </div>
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+                {isGameComplete && (
+                    <div className="text-center">
+                        <p className="text-2xl font-bold mb-4 text-green-600">Congratulations! You&apos;ve completed the game!</p>
+                        <button 
+                            onClick={startNewGame}
+                            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-300"
+                        >
+                            Play Again
+                        </button>
+                    </div>
+                )}
+            </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
-  );
+    );
 }
