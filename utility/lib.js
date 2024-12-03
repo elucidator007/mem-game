@@ -1,5 +1,5 @@
 export const createMemoryGame = (difficulty_level) => {
-    
+    console.log(difficulty_level)
     // get size
     const size = difficulty_level * difficulty_level;
 
@@ -8,8 +8,7 @@ export const createMemoryGame = (difficulty_level) => {
 
     // add all elements in array - twice
     for (let i = 0 ; i < size/2 ; i++){
-        temp.push(i + 1)
-        temp.push(i + 1)
+        temp.push(i + 1, i + 1)
     }
 
     for (let i = 0 ; i < size ; i++){
